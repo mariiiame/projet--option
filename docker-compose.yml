@@ -1,0 +1,28 @@
+services:
+  backend:
+    build: ./backend/blog-api
+    image: mariame25/backend-blog-app
+    container_name: backend
+    ports:
+      - "8083:8083"
+    # Ajoutez un health check simple
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8083/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build: ./frontend/blog-app
+    image: mariame25/frontend-blog-app
+    container_name: frontend
+    ports:
+      - "8081:80"
+    environment:
+      - VITE_API_URL=/api
+    depends_on:
+      backend:
+        condition: service_healthy
+    # Ajoutez restart policy
+    restart: unless-stopped
